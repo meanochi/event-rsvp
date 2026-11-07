@@ -125,7 +125,6 @@ function sendOne_(g, isReminder) {
     subject: isReminder ? MAIL.reminderSubject : MAIL.subject,
     htmlBody: buildHtml_(g.name, link, isReminder),
     body: buildText_(g.name, link, isReminder),
-    inlineImages: { invite: inviteImage_() },
   });
 }
 
