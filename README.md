@@ -50,6 +50,7 @@ apps-script/Code.gs קוד השרת להדבקה ב-Google Apps Script
 
 ### התקנה
 1. ב-Apps Script של הגיליון: **+ ← סקריפט**, קראו לקובץ `Mailer`, הדביקו את התוכן של `apps-script/Mailer.gs` ושמרו.
+   באותה דרך צרו קובץ `MailTemplate` והדביקו בו את `apps-script/MailTemplate.gs`.
 2. רעננו את הגיליון. יופיע התפריט **"שליחת הזמנות"**.
 3. בחרו **הכנת לשונית מוזמנים** ואשרו את ההרשאות.
 
