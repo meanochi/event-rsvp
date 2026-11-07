@@ -64,6 +64,14 @@
               <button type="button" data-target="women" data-d="-1" aria-label="הפחת אישה">−</button>
             </div>
           </div>
+          <div class="counter">
+            <div class="lbl">ילדים <span class="sub">(עד גיל 10)</span></div>
+            <div class="stepper">
+              <button type="button" data-target="kids" data-d="1" aria-label="הוסף ילד">+</button>
+              <output id="kids">0</output>
+              <button type="button" data-target="kids" data-d="-1" aria-label="הפחת ילד">−</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -115,7 +123,7 @@
   if (qs.get("name")) $("name").value = qs.get("name");
   if (qs.get("phone")) $("phone").value = qs.get("phone");
 
-  const counts = { men: 0, women: 0 };
+  const counts = { men: 0, women: 0, kids: 0 };
   document.querySelectorAll(".stepper button").forEach((b) => {
     b.addEventListener("click", () => {
       const t = b.dataset.target;
@@ -139,13 +147,14 @@
     const phone = $("phone").value.replace(/[^\d+]/g, "");
     if (!name) return showMsg("נא למלא שם", "err");
     if (phone.length < 9) return showMsg("נא למלא מספר טלפון תקין", "err");
-    if (attending === "yes" && counts.men + counts.women === 0)
+    if (attending === "yes" && counts.men + counts.women + counts.kids === 0)
       return showMsg("נא לציין כמה משתתפים יגיעו", "err");
 
     const payload = {
       name, phone, attending,
       men: attending === "yes" ? counts.men : 0,
       women: attending === "yes" ? counts.women : 0,
+      kids: attending === "yes" ? counts.kids : 0,
       note: $("note").value.trim(),
     };
 
@@ -165,7 +174,9 @@
       $("form").classList.add("hidden");
       $("thanks").classList.remove("hidden");
       $("thanksText").textContent = attending === "yes"
-        ? `רשמנו ${payload.men} גברים ו-${payload.women} נשים. נשמח לראותכם!`
+        ? "רשמנו " + [[payload.men, "גברים", "גבר אחד"], [payload.women, "נשים", "אישה אחת"], [payload.kids, "ילדים", "ילד אחד"]]
+            .filter(([n]) => n > 0).map(([n, many, one]) => (n === 1 ? one : n + " " + many))
+            .join(", ").replace(/, ([^,]*)$/, (m, last) => " ו" + (/^\d/.test(last) ? "-" : "") + last) + ". נשמח לראותכם!"
         : "תודה על העדכון. נשמח לשמוח יחד בשמחות.";
     } catch (err) {
       showMsg("אירעה שגיאה בשליחה, נא לנסות שוב", "err");

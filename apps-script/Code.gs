@@ -12,7 +12,8 @@
  */
 
 const SHEET_NAME = 'אישורים';
-const HEADERS = ['עודכן', 'שם', 'טלפון', 'מגיעים', 'גברים', 'נשים', 'הערה'];
+// עמודת הילדים נוספה בסוף, כדי לא להזיז נתונים בגיליון קיים
+const HEADERS = ['עודכן', 'שם', 'טלפון', 'מגיעים', 'גברים', 'נשים', 'הערה', 'ילדים (עד גיל 10)'];
 
 function setup() {
   const sheet = getSheet_();
@@ -36,6 +37,9 @@ function getSheet_() {
     sheet.setRightToLeft(true);
     sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold');
     sheet.getRange('C:C').setNumberFormat('@'); // phone as text
+  }
+  if (sheet.getRange(1, HEADERS.length).getValue() !== HEADERS[HEADERS.length - 1]) {
+    sheet.getRange(1, HEADERS.length).setValue(HEADERS[HEADERS.length - 1]).setFontWeight('bold');
   }
   return sheet;
 }
@@ -67,7 +71,8 @@ function doPost(e) {
     const attending = d.attending === 'yes' ? 'כן' : 'לא';
     const men = attending === 'כן' ? toInt_(d.men) : 0;
     const women = attending === 'כן' ? toInt_(d.women) : 0;
-    const row = [new Date(), name, "'" + phone, attending, men, women, clean_(d.note, 500)];
+    const kids = attending === 'כן' ? toInt_(d.kids) : 0;
+    const row = [new Date(), name, "'" + phone, attending, men, women, clean_(d.note, 500), kids];
 
     const sheet = getSheet_();
     const last = sheet.getLastRow();
@@ -104,7 +109,7 @@ function doGet(e) {
       updated: r[0] instanceof Date ? r[0].toISOString() : r[0],
       name: r[1], phone: String(r[2]),
       attending: r[3] === 'כן' ? 'yes' : 'no',
-      men: r[4], women: r[5], note: r[6],
+      men: r[4], women: r[5], note: r[6], kids: Number(r[7]) || 0,
     };
   });
   return json_({ ok: true, rows: rows });

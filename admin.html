@@ -25,6 +25,7 @@
     <div class="stats">
       <div class="stat"><div class="n" id="sMen">0</div><div class="t">גברים מגיעים</div></div>
       <div class="stat"><div class="n" id="sWomen">0</div><div class="t">נשים מגיעות</div></div>
+      <div class="stat"><div class="n" id="sKids">0</div><div class="t">ילדים (עד גיל 10)</div></div>
       <div class="stat"><div class="n" id="sTotal">0</div><div class="t">סה"כ משתתפים</div></div>
       <div class="stat"><div class="n" id="sYes">0</div><div class="t">משפחות מאשרות</div></div>
       <div class="stat"><div class="n" id="sNo">0</div><div class="t">לא מגיעים</div></div>
@@ -36,7 +37,7 @@
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>שם</th><th>טלפון</th><th>סטטוס</th><th>גברים</th><th>נשים</th><th>הערה</th><th>עודכן</th></tr></thead>
+        <thead><tr><th>שם</th><th>טלפון</th><th>סטטוס</th><th>גברים</th><th>נשים</th><th>ילדים</th><th>הערה</th><th>עודכן</th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
     </div>
@@ -66,9 +67,11 @@
     const yes = rows.filter((r) => r.attending === "yes");
     const men = yes.reduce((s, r) => s + Number(r.men || 0), 0);
     const women = yes.reduce((s, r) => s + Number(r.women || 0), 0);
+    const kids = yes.reduce((s, r) => s + Number(r.kids || 0), 0);
     $("sMen").textContent = men;
     $("sWomen").textContent = women;
-    $("sTotal").textContent = men + women;
+    $("sKids").textContent = kids;
+    $("sTotal").textContent = men + women + kids;
     $("sYes").textContent = yes.length;
     $("sNo").textContent = rows.length - yes.length;
     const tb = $("rows"); tb.innerHTML = "";
@@ -78,6 +81,7 @@
         r.name, r.phone, null,
         r.attending === "yes" ? r.men : "–",
         r.attending === "yes" ? r.women : "–",
+        r.attending === "yes" ? (r.kids || 0) : "–",
         r.note || "", r.updated ? new Date(r.updated).toLocaleString("he-IL") : "",
       ];
       cells.forEach((v, i) => {
@@ -88,7 +92,7 @@
           s.textContent = r.attending === "yes" ? "מגיעים" : "לא מגיעים";
           td.appendChild(s);
         } else td.textContent = v;
-        if (i === 3 || i === 4) td.className = "num";
+        if (i >= 3 && i <= 5) td.className = "num";
         tr.appendChild(td);
       });
       tb.appendChild(tr);
@@ -117,10 +121,10 @@
   $("refresh").addEventListener("click", async () => { rows = await load(store.get()); render(); });
   $("logout").addEventListener("click", () => { store.set(""); location.reload(); });
   $("csv").addEventListener("click", () => {
-    const head = ["שם", "טלפון", "מגיעים", "גברים", "נשים", "הערה", "עודכן"];
+    const head = ["שם", "טלפון", "מגיעים", "גברים", "נשים", "ילדים", "הערה", "עודכן"];
     const esc = (v) => '"' + String(v ?? "").replace(/"/g, '""') + '"';
     const lines = [head.map(esc).join(",")].concat(rows.map((r) =>
-      [r.name, r.phone, r.attending === "yes" ? "כן" : "לא", r.men, r.women, r.note, r.updated].map(esc).join(",")));
+      [r.name, r.phone, r.attending === "yes" ? "כן" : "לא", r.men, r.women, r.kids || 0, r.note, r.updated].map(esc).join(",")));
     const blob = new Blob(["﻿" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = "rsvp.csv"; a.click();
