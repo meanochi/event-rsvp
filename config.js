@@ -10,5 +10,5 @@ window.EVENT_CONFIG = {
   invitationImage: "invitation.jpg", // תמונת ההזמנה – לא חובה
 
   // כתובת ה-Web App של Google Apps Script (ראו README, שלב 1)
-  apiUrl: "PASTE_APPS_SCRIPT_URL_HERE",
+  apiUrl: "https://script.google.com/macros/s/AKfycbxm79ZkivaGQ1lz9ITf4DBBbSiJAtVT6vy5SERq1lX3ai4S8xeLzz55Y8fOWSpIEz8J5Q/exec",
 };
