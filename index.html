@@ -7,10 +7,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <meta property="og:title" content="אישור הגעה">
+  <meta property="og:image" content="invitation.jpg">
   <script src="config.js"></script>
 </head>
 <body>
 <main class="wrap">
+  <img id="invite" class="invite hidden" alt="הזמנה לאירוע">
   <div class="card">
     <div class="header">
       <div class="bsd">בס"ד</div>
@@ -79,6 +82,7 @@
   const $ = (id) => document.getElementById(id);
   document.title = "אישור הגעה – " + C.title;
   $("title").textContent = C.title;
+  if (C.invitationImage) { $("invite").src = C.invitationImage; $("invite").classList.remove("hidden"); }
   $("hosts").textContent = C.hosts ? C.hosts + " שמחים להזמינכם" : "";
   const d = [];
   if (C.date) d.push(["תאריך", C.date]);
