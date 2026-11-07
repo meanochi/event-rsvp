@@ -7,7 +7,7 @@ window.EVENT_CONFIG = {
   location: "אולם היכל אברהם יצחק, רחוב קהילות יעקב 19, ירושלים",
   mapsLink: "https://waze.com/ul?q=" + encodeURIComponent("קהילות יעקב 19 ירושלים"),
   rsvpDeadline: "",                 // תאריך אחרון לאישור – לא חובה
-  invitationImage: "invitation.jpg?v=2", // תמונת ההזמנה בראש הדף – לא חובה (השאירו ריק "" כדי להסתיר)
+  invitationImage: "invitation.jpg?v=2", // קישור לתמונת ההזמנה המקורית – לא חובה
 
   // נוסח ההזמנה המוצג בדף (טקסט, ולא תמונה – כדי שיוצג גם במסננים כמו נטפרי)
   invitation: {
