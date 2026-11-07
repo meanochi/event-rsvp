@@ -111,8 +111,8 @@ function runBatch_(guests, isReminder, label) {
   const msg = 'יישלחו ' + n + ' ' + label + '.' +
     (n < guests.length ? '\n(מכסת השליחה היומית מאפשרת ' + quota + ' בלבד. את השאר אפשר לשלוח מחר.)' : '') +
     '\n\nלהמשיך?';
+  Logger.log(msg.replace('\n\nלהמשיך?', '') + (ui ? '\nממתין לאישור בחלון שבגיליון...' : ''));
   if (ui && ui.alert(label, msg, ui.ButtonSet.YES_NO) !== ui.Button.YES) return;
-  if (!ui) Logger.log(msg.replace('\n\nלהמשיך?', ''));
 
   const sh = guestsSheet_();
   const col = (isReminder ? G.REMINDED : G.SENT) + 1;
@@ -209,8 +209,9 @@ function ui_() {
 
 /** הודעה למשתמש: בחלון בגיליון, או ביומן הביצוע כשמריצים מהעורך */
 function alert_(msg) {
+  Logger.log(msg);
   const ui = ui_();
-  if (ui) ui.alert(msg); else Logger.log(msg);
+  if (ui) ui.alert(msg); // אם הגיליון פתוח – ההודעה מופיעה בו וממתינה ל"אישור"
 }
 
 function normPhone_(p) {
