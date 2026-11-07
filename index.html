@@ -106,6 +106,7 @@
   // Prefill from personal invite link: ?name=...
   const qs = new URLSearchParams(location.search);
   if (qs.get("name")) $("name").value = qs.get("name");
+  if (qs.get("phone")) $("phone").value = qs.get("phone");
 
   const counts = { men: 0, women: 0 };
   document.querySelectorAll(".stepper button").forEach((b) => {
