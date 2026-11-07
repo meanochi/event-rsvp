@@ -86,6 +86,8 @@ function doPost(e) {
     if (target > 0) sheet.getRange(target, 1, 1, row.length).setValues([row]); // עדכון קיים
     else sheet.appendRow(row);
 
+    try { markGuest_(name, phone, statusText_(attending, men, women, kids)); } catch (err) {} // לשונית "מוזמנים"
+
     return json_({ ok: true });
   } catch (err) {
     return json_({ ok: false, error: 'server' });
@@ -113,4 +115,47 @@ function doGet(e) {
     };
   });
   return json_({ ok: true, rows: rows });
+}
+
+/* ---------- עמודת "אישרו?" בלשונית מוזמנים ---------- */
+
+const GUESTS_TAB = 'מוזמנים';
+const STATUS_COL = 6; // עמודה F
+const STATUS_HEADER = 'אישרו?';
+
+function statusText_(attending, men, women, kids) {
+  if (attending !== 'כן') return 'לא מגיעים';
+  const parts = [];
+  if (men) parts.push(men + ' גברים');
+  if (women) parts.push(women + ' נשים');
+  if (kids) parts.push(kids + ' ילדים');
+  return 'מגיעים' + (parts.length ? ': ' + parts.join(', ') : '');
+}
+
+function phoneKey_(p) {
+  const digits = String(p || '').replace(/[^\d]/g, '');
+  return digits.length >= 9 ? digits.slice(-9) : '';
+}
+
+function nameKey_(n) {
+  return String(n || '').replace(/^'/, '').replace(/[\s"'״׳-]+/g, ' ').trim();
+}
+
+/** מסמן את המוזמן המתאים (לפי טלפון, ואם אין – לפי שם) בעמודת "אישרו?" */
+function markGuest_(name, phone, text, sheet) {
+  const sh = sheet || SpreadsheetApp.getActiveSpreadsheet().getSheetByName(GUESTS_TAB);
+  if (!sh) return false;
+  if (sh.getRange(1, STATUS_COL).getValue() !== STATUS_HEADER) {
+    sh.getRange(1, STATUS_COL).setValue(STATUS_HEADER).setFontWeight('bold').setBackground('#f1e4d4');
+  }
+  const last = sh.getLastRow();
+  if (last < 2) return false;
+  const rows = sh.getRange(2, 1, last - 1, 3).getValues(); // שם, מייל, טלפון
+  const pk = phoneKey_(phone), nk = nameKey_(name);
+  let idx = -1;
+  if (pk) idx = rows.findIndex(function (r) { return phoneKey_(r[2]) === pk; });
+  if (idx < 0 && nk) idx = rows.findIndex(function (r) { return nameKey_(r[0]) === nk; });
+  if (idx < 0) return false;
+  sh.getRange(idx + 2, STATUS_COL).setValue(text);
+  return true;
 }

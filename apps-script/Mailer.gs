@@ -23,8 +23,8 @@ const MAIL = {
 };
 
 const GUESTS_SHEET = 'מוזמנים';
-const G = { NAME: 0, EMAIL: 1, PHONE: 2, SENT: 3, REMINDED: 4 }; // אינדקס עמודות
-const GUEST_HEADERS = ['שם', 'מייל', 'טלפון (לא חובה)', 'הזמנה נשלחה', 'תזכורת נשלחה'];
+const G = { NAME: 0, EMAIL: 1, PHONE: 2, SENT: 3, REMINDED: 4, STATUS: 5 }; // אינדקס עמודות
+const GUEST_HEADERS = ['שם', 'מייל', 'טלפון (לא חובה)', 'הזמנה נשלחה', 'תזכורת נשלחה', 'אישרו?'];
 
 /* ---------- תפריט ---------- */
 
@@ -181,6 +181,24 @@ function confirmedKeys_() {
 
 function isConfirmed_(g, keys) {
   return (g.phone && keys.phones[g.phone]) || keys.names[normName_(g.name)];
+}
+
+/**
+ * מעדכן את עמודת "אישרו?" לפי כל האישורים שכבר התקבלו.
+ * (אישורים חדשים מתעדכנים בה אוטומטית; את זה מריצים פעם אחת, או כשמוסיפים מוזמנים.)
+ */
+function syncStatus() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const conf = ss.getSheetByName(SHEET_NAME); // מוגדר ב-Code.gs
+  const guests = guestsSheet_();
+  if (!conf || conf.getLastRow() < 2) { alert_('אין עדיין אישורים.'); return; }
+  const rows = conf.getRange(2, 1, conf.getLastRow() - 1, HEADERS.length).getValues();
+  let marked = 0;
+  rows.forEach(function (r) {
+    const text = statusText_(r[3], Number(r[4]) || 0, Number(r[5]) || 0, Number(r[7]) || 0);
+    if (markGuest_(r[1], r[2], text, guests)) marked++;
+  });
+  alert_('עודכנו ' + marked + ' מוזמנים בעמודת "אישרו?" (מתוך ' + rows.length + ' אישורים).');
 }
 
 function showStatus() {
