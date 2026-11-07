@@ -29,7 +29,7 @@ function buildHtml_(name, link, isReminder) {
   const fallback = el_('a', 'color:' + MAIL.color + ';', esc_(MAIL.siteUrl), { href: href });
 
   const inner =
-    el_('p', 'font-size:18px;margin:0 0 8px;', el_('b', '', esc_(name) + ' היקרים,')) +
+    el_('p', 'font-size:18px;margin:0 0 8px;', el_('b', '', 'לבני משפחתנו היקרים,')) +
     el_('p', 'font-size:16px;line-height:1.6;margin:0 0 18px;', esc_(intro)) +
     image +
     el_('p', 'font-size:15px;line-height:1.6;margin:0 0 4px;', esc_(MAIL.eventLine)) +
@@ -46,7 +46,7 @@ function buildHtml_(name, link, isReminder) {
 }
 
 function buildText_(name, link, isReminder) {
-  return name + ' היקרים,\n\n' +
+  return 'לבני משפחתנו היקרים,\n\n' +
     (isReminder ? 'טרם קיבלנו את אישור ההגעה שלכם.\n' : 'נשמח לראותכם משתתפים בשמחת בר המצווה של בננו היקר.\n') +
     MAIL.eventLine + '\n' + MAIL.placeLine + '\n\n' +
     'לאישור הגעה: ' + link + '\n\n' + MAIL.fromName;
