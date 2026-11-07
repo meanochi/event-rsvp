@@ -5,8 +5,8 @@
  * התקנה:
  * 1. ב-Apps Script: לחצו על "+" ליד "קבצים" ← "סקריפט", קראו לו Mailer, הדביקו את הקובץ הזה ושמרו.
  *    אחר כך צרו באותה דרך קובץ נוסף בשם MailTemplate והדביקו בו את MailTemplate.gs.
- * 2. רעננו את הגיליון. יופיע תפריט חדש: "שליחת הזמנות".
- * 3. בפעם הראשונה בחרו "הכנת לשונית מוזמנים" ואשרו הרשאות (שליחת מייל בשמכם).
+ * 2. בעורך, בחרו בפונקציה installMenu ולחצו "הפעלה" (פעם אחת). אשרו הרשאות.
+ * 3. רעננו את הגיליון. יופיע תפריט חדש: "שליחת הזמנות".
  *
  * אין צורך לפרוס מחדש את ה-Web App – התפריט עובד ישירות מהגיליון.
  */
@@ -28,7 +28,21 @@ const GUEST_HEADERS = ['שם', 'מייל', 'טלפון (לא חובה)', 'הזמ
 
 /* ---------- תפריט ---------- */
 
-function onOpen() {
+/**
+ * להריץ פעם אחת מהעורך: מתקין טריגר שמוסיף את התפריט בכל פתיחה של הגיליון.
+ * (טריגר מותקן אמין יותר מ-onOpen רגיל, שלא תמיד רץ כשמחוברים כמה חשבונות Google.)
+ */
+function installMenu() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'addMenu') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('addMenu').forSpreadsheet(ss).onOpen().create();
+  setupGuests();
+  Logger.log('התפריט הותקן. רעננו את הגיליון.');
+}
+
+function addMenu() {
   SpreadsheetApp.getUi()
     .createMenu('שליחת הזמנות')
     .addItem('הכנת לשונית מוזמנים', 'setupGuests')
@@ -86,13 +100,9 @@ function sendReminders() {
 }
 
 function runBatch_(guests, isReminder, label) {
-  const ui = ui_();
-  if (!ui) {
-    Logger.log('שליחה לכל המוזמנים אפשרית רק מהתפריט "שליחת הזמנות" בגיליון.');
-    return;
-  }
+  const ui = ui_(); // null כשמריצים מהעורך – אז הלחיצה על "הפעלה" היא האישור
   if (!guests.length) {
-    ui.alert(isReminder ? 'אין למי לשלוח תזכורת – כולם אישרו או כבר קיבלו תזכורת.'
+    alert_(isReminder ? 'אין למי לשלוח תזכורת – כולם אישרו או כבר קיבלו תזכורת.'
                         : 'אין הזמנות לשליחה – כולם כבר קיבלו.');
     return;
   }
@@ -101,7 +111,8 @@ function runBatch_(guests, isReminder, label) {
   const msg = 'יישלחו ' + n + ' ' + label + '.' +
     (n < guests.length ? '\n(מכסת השליחה היומית מאפשרת ' + quota + ' בלבד. את השאר אפשר לשלוח מחר.)' : '') +
     '\n\nלהמשיך?';
-  if (ui.alert(label, msg, ui.ButtonSet.YES_NO) !== ui.Button.YES) return;
+  if (ui && ui.alert(label, msg, ui.ButtonSet.YES_NO) !== ui.Button.YES) return;
+  if (!ui) Logger.log(msg.replace('\n\nלהמשיך?', ''));
 
   const sh = guestsSheet_();
   const col = (isReminder ? G.REMINDED : G.SENT) + 1;
@@ -116,7 +127,7 @@ function runBatch_(guests, isReminder, label) {
       failed.push(g.name + ' (' + g.email + ')');
     }
   }
-  ui.alert('נשלחו ' + sent + ' ' + label + '.' +
+  alert_('נשלחו ' + sent + ' ' + label + '.' +
     (failed.length ? '\n\nנכשלו:\n' + failed.join('\n') : ''));
 }
 
