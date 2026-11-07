@@ -55,7 +55,7 @@ function setupGuests() {
     sh.getRange('C:C').setNumberFormat('@');
     sh.setColumnWidths(1, 5, 170);
   }
-  SpreadsheetApp.getUi().alert(
+  alert_(
     'הלשונית "' + GUESTS_SHEET + '" מוכנה.\n\n' +
     'מלאו בכל שורה: שם (למשל "משפחת כהן"), מייל, ואם אפשר גם טלפון.\n' +
     'הטלפון עוזר לזהות בדיוק מי כבר אישר, כדי לא לשלוח לו תזכורת.');
@@ -69,7 +69,7 @@ function sendTestReminder() { sendTest_(true); }
 function sendTest_(isReminder) {
   const me = Session.getActiveUser().getEmail();
   sendOne_({ name: 'משפחת ניסיון', email: me, phone: '' }, isReminder);
-  SpreadsheetApp.getUi().alert('נשלח מייל ניסיון אל ' + me);
+  alert_('נשלח מייל ניסיון אל ' + me);
 }
 
 function sendInvites() {
@@ -86,7 +86,11 @@ function sendReminders() {
 }
 
 function runBatch_(guests, isReminder, label) {
-  const ui = SpreadsheetApp.getUi();
+  const ui = ui_();
+  if (!ui) {
+    Logger.log('שליחה לכל המוזמנים אפשרית רק מהתפריט "שליחת הזמנות" בגיליון.');
+    return;
+  }
   if (!guests.length) {
     ui.alert(isReminder ? 'אין למי לשלוח תזכורת – כולם אישרו או כבר קיבלו תזכורת.'
                         : 'אין הזמנות לשליחה – כולם כבר קיבלו.');
@@ -176,7 +180,7 @@ function showStatus() {
   const sent = guests.filter(function (g) { return g.sent; }).length;
   const confirmed = guests.filter(function (g) { return isConfirmed_(g, keys); }).length;
   const reminded = guests.filter(function (g) { return g.reminded; }).length;
-  SpreadsheetApp.getUi().alert(
+  alert_(
     'מוזמנים עם מייל: ' + guests.length + '\n' +
     'הזמנה נשלחה: ' + sent + '\n' +
     'מילאו את הטופס: ' + confirmed + '\n' +
@@ -186,6 +190,17 @@ function showStatus() {
 }
 
 /* ---------- עזר ---------- */
+
+/** ממשק הגיליון – או null כשמריצים מתוך עורך הסקריפט */
+function ui_() {
+  try { return SpreadsheetApp.getUi(); } catch (e) { return null; }
+}
+
+/** הודעה למשתמש: בחלון בגיליון, או ביומן הביצוע כשמריצים מהעורך */
+function alert_(msg) {
+  const ui = ui_();
+  if (ui) ui.alert(msg); else Logger.log(msg);
+}
 
 function normPhone_(p) {
   let s = String(p || '').replace(/[^\d]/g, '');
