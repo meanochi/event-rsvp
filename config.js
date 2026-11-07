@@ -7,26 +7,7 @@ window.EVENT_CONFIG = {
   location: "אולם היכל אברהם יצחק, רחוב קהילות יעקב 19, ירושלים",
   mapsLink: "https://waze.com/ul?q=" + encodeURIComponent("קהילות יעקב 19 ירושלים"),
   rsvpDeadline: "",                 // תאריך אחרון לאישור – לא חובה
-  invitationImage: "invitation.jpg?v=2", // קישור לתמונת ההזמנה המקורית – לא חובה
-
-  // נוסח ההזמנה המוצג בדף (טקסט, ולא תמונה – כדי שיוצג גם במסננים כמו נטפרי)
-  invitation: {
-    opening: "בסיעתא דשמיא",
-    intro: [
-      "מתוך שבח והודיה להשי\"ת על כל הטוב אשר גמלנו",
-      "הננו מתכבדים להזמינכם",
-      "להשתתף בשמחת בר המצווה של בננו היקר",
-    ],
-    celebrant: "בן ציון הלוי",
-    suffix: "נ״י",
-    closing: "נשמח לראותכם משתתפים בשמחתנו",
-    extra: [
-      {
-        intro: ["גם אנו מתכבדים להזמינכם להשתתף", "בשמחת בר המצווה של נכדנו היקר"],
-        names: ["הרב אהרון שרגא לופיאנסקי ורעייתו", "הרב יהושע ווייס ורעייתו"],
-      },
-    ],
-  },
+  invitationImage: "invitation.jpg", // תמונת ההזמנה – לא חובה
 
   // כתובת ה-Web App של Google Apps Script (ראו README, שלב 1)
   apiUrl: "https://script.google.com/macros/s/AKfycbxm79ZkivaGQ1lz9ITf4DBBbSiJAtVT6vy5SERq1lX3ai4S8xeLzz55Y8fOWSpIEz8J5Q/exec",
