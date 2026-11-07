@@ -67,7 +67,7 @@ function doPost(e) {
     const attending = d.attending === 'yes' ? 'כן' : 'לא';
     const men = attending === 'כן' ? toInt_(d.men) : 0;
     const women = attending === 'כן' ? toInt_(d.women) : 0;
-    const row = [new Date(), name, phone, attending, men, women, clean_(d.note, 500)];
+    const row = [new Date(), name, "'" + phone, attending, men, women, clean_(d.note, 500)];
 
     const sheet = getSheet_();
     const last = sheet.getLastRow();

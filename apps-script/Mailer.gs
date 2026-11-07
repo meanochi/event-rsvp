@@ -190,6 +190,7 @@ function showStatus() {
 function normPhone_(p) {
   let s = String(p || '').replace(/[^\d]/g, '');
   if (s.indexOf('972') === 0) s = '0' + s.slice(3);
+  if (s.length === 9 && s.charAt(0) !== '0') s = '0' + s; // הגיליון השמיט את ה-0 בהתחלה
   return s;
 }
 
