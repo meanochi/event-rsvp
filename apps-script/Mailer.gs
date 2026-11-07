@@ -13,7 +13,7 @@
 
 const MAIL = {
   siteUrl: 'https://meanochi.github.io/event-rsvp/',
-  imagePath: 'invitation.jpg?v=3',
+  imagePath: 'invitation.jpg?v=4',
   fromName: 'מאיר וטובה לופיאנסקי',
   subject: 'הזמנה לשמחת בר המצווה של בן ציון הלוי נ״י',
   reminderSubject: 'תזכורת: אישור הגעה לשמחת בר המצווה של בן ציון הלוי נ״י',
