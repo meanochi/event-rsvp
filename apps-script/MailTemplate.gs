@@ -34,6 +34,8 @@ function buildHtml_(name, link, isReminder) {
     image +
     el_('p', 'font-size:15px;line-height:1.6;margin:0 0 4px;', esc_(MAIL.eventLine)) +
     el_('p', 'font-size:15px;line-height:1.6;margin:0 0 22px;', esc_(MAIL.placeLine)) +
+    el_('p', 'font-size:15px;line-height:1.6;margin:0 0 16px;color:' + MAIL.color + ';',
+      'מאחר והאירוע משפחתי בלבד, נשמח שתעדכנו בהקדם כדי שנוכל להיערך בהתאם' + el_('br', '') + 'תודה מראש') +
     button +
     el_('p', 'font-size:13px;color:#7a6f66;margin:18px 0 0;', 'אם הכפתור אינו פועל: ' + fallback) +
     el_('p', 'font-size:16px;margin:22px 0 0;', el_('b', '', esc_(MAIL.fromName)));
