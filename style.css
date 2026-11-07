@@ -78,7 +78,7 @@ input:focus, textarea:focus { outline: 2px solid var(--accent); border-color: tr
 @media (prefers-color-scheme: dark) { .btn { color: #0f1a2a; } }
 .btn:disabled { opacity: .6; cursor: wait; }
 .family-note { margin: 24px 0 0; padding: 12px 14px; text-align: center; font-size: 15px; line-height: 1.6; color: var(--accent); background: var(--accent-soft); border-radius: 10px; }
-.family-note + .btn { margin-top: 14px; }
+.family-note.top { margin: 0 0 16px; border: 1px solid var(--border); }
 .msg { margin-top: 16px; padding: 12px; border-radius: 10px; text-align: center; display: none; }
 .msg.ok { display: block; background: color-mix(in srgb, var(--ok) 15%, transparent); color: var(--ok); }
 .msg.err { display: block; background: color-mix(in srgb, var(--err) 15%, transparent); color: var(--err); }
