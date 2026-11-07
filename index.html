@@ -18,6 +18,9 @@
 </head>
 <body>
 <main class="wrap">
+  <a id="inviteImgLink" class="hidden" target="_blank" rel="noopener" title="לחצו להגדלה">
+    <img id="invite" class="invite" width="1654" height="1654" alt="הזמנה לשמחת בר המצווה של בן ציון הלוי נ״י">
+  </a>
   <section class="invitation" id="invitation">
     <div class="inv-bsd" id="invBsd"></div>
     <div class="inv-intro" id="invIntro"></div>
@@ -26,7 +29,6 @@
     <div class="inv-closing" id="invClosing"></div>
     <div class="inv-hosts" id="hosts"></div>
     <div id="invExtra"></div>
-    <a class="inv-image-link hidden" id="inviteLink" target="_blank" rel="noopener">לצפייה בהזמנה המקורית</a>
   </section>
   <div class="card">
     <h2 class="form-title">אישור הגעה</h2>
@@ -105,7 +107,11 @@
     const names = document.createElement("div"); names.className = "inv-extra-names"; lines(names, x.names);
     box.append(intro, names); $("invExtra").appendChild(box);
   });
-  if (C.invitationImage) { $("inviteLink").href = C.invitationImage; $("inviteLink").classList.remove("hidden"); }
+  if (C.invitationImage) {
+    $("invite").src = C.invitationImage;
+    $("inviteImgLink").href = C.invitationImage;
+    $("inviteImgLink").classList.remove("hidden");
+  }
   const d = [];
   if (C.date) d.push(["תאריך", C.date]);
   if (C.time) d.push(["שעה", C.time]);
