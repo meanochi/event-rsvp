@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>ניהול אישורי הגעה</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="config.js"></script>
+</head>
+<body>
+<main class="wrap wide">
+  <h1 id="title" style="color:var(--accent);margin-top:0">ניהול אישורי הגעה</h1>
+
+  <div class="card" id="login">
+    <label for="key">קוד מנהל</label>
+    <input type="text" id="key" autocomplete="off" placeholder="הקוד שהוגדר ב-Apps Script">
+    <button class="btn" id="enter">כניסה</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <section id="panel" class="hidden">
+    <div class="stats">
+      <div class="stat"><div class="n" id="sMen">0</div><div class="t">גברים מגיעים</div></div>
+      <div class="stat"><div class="n" id="sWomen">0</div><div class="t">נשים מגיעות</div></div>
+      <div class="stat"><div class="n" id="sTotal">0</div><div class="t">סה"כ משתתפים</div></div>
+      <div class="stat"><div class="n" id="sYes">0</div><div class="t">משפחות מאשרות</div></div>
+      <div class="stat"><div class="n" id="sNo">0</div><div class="t">לא מגיעים</div></div>
+    </div>
+    <div class="toolbar">
+      <button class="btn" id="refresh">רענון</button>
+      <button class="btn secondary" id="csv">הורדה לאקסל (CSV)</button>
+      <button class="btn secondary" id="logout">יציאה</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>שם</th><th>טלפון</th><th>סטטוס</th><th>גברים</th><th>נשים</th><th>הערה</th><th>עודכן</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="muted" id="updated"></p>
+  </section>
+</main>
+<script>
+(function () {
+  const C = window.EVENT_CONFIG;
+  const $ = (id) => document.getElementById(id);
+  $("title").textContent = "ניהול אישורי הגעה – " + C.title;
+  let rows = [];
+  const store = {
+    get() { try { return sessionStorage.getItem("rsvpKey") || ""; } catch { return ""; } },
+    set(v) { try { v ? sessionStorage.setItem("rsvpKey", v) : sessionStorage.removeItem("rsvpKey"); } catch {} },
+  };
+
+  async function load(key) {
+    const url = C.apiUrl + "?action=list&key=" + encodeURIComponent(key);
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "error");
+    return data.rows;
+  }
+
+  function render() {
+    const yes = rows.filter((r) => r.attending === "yes");
+    const men = yes.reduce((s, r) => s + Number(r.men || 0), 0);
+    const women = yes.reduce((s, r) => s + Number(r.women || 0), 0);
+    $("sMen").textContent = men;
+    $("sWomen").textContent = women;
+    $("sTotal").textContent = men + women;
+    $("sYes").textContent = yes.length;
+    $("sNo").textContent = rows.length - yes.length;
+    const tb = $("rows"); tb.innerHTML = "";
+    rows.forEach((r) => {
+      const tr = document.createElement("tr");
+      const cells = [
+        r.name, r.phone, null,
+        r.attending === "yes" ? r.men : "–",
+        r.attending === "yes" ? r.women : "–",
+        r.note || "", r.updated ? new Date(r.updated).toLocaleString("he-IL") : "",
+      ];
+      cells.forEach((v, i) => {
+        const td = document.createElement("td");
+        if (i === 2) {
+          const s = document.createElement("span");
+          s.className = "tag " + (r.attending === "yes" ? "yes" : "no");
+          s.textContent = r.attending === "yes" ? "מגיעים" : "לא מגיעים";
+          td.appendChild(s);
+        } else td.textContent = v;
+        if (i === 3 || i === 4) td.className = "num";
+        tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    });
+    $("updated").textContent = "עודכן: " + new Date().toLocaleTimeString("he-IL");
+  }
+
+  async function enter(key) {
+    const m = $("loginMsg");
+    m.className = "msg ok"; m.textContent = "טוען...";
+    try {
+      rows = await load(key);
+      store.set(key);
+      $("login").classList.add("hidden");
+      $("panel").classList.remove("hidden");
+      render();
+    } catch (e) {
+      store.set("");
+      m.className = "msg err";
+      m.textContent = e.message === "unauthorized" ? "קוד שגוי" : "שגיאה בטעינת הנתונים";
+    }
+  }
+
+  $("enter").addEventListener("click", () => enter($("key").value.trim()));
+  $("key").addEventListener("keydown", (e) => { if (e.key === "Enter") enter($("key").value.trim()); });
+  $("refresh").addEventListener("click", async () => { rows = await load(store.get()); render(); });
+  $("logout").addEventListener("click", () => { store.set(""); location.reload(); });
+  $("csv").addEventListener("click", () => {
+    const head = ["שם", "טלפון", "מגיעים", "גברים", "נשים", "הערה", "עודכן"];
+    const esc = (v) => '"' + String(v ?? "").replace(/"/g, '""') + '"';
+    const lines = [head.map(esc).join(",")].concat(rows.map((r) =>
+      [r.name, r.phone, r.attending === "yes" ? "כן" : "לא", r.men, r.women, r.note, r.updated].map(esc).join(",")));
+    const blob = new Blob(["﻿" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "rsvp.csv"; a.click();
+  });
+
+  if (store.get()) enter(store.get());
+})();
+</script>
+</body>
+</html>

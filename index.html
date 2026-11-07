@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>אישור הגעה</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="config.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <div class="card">
+    <div class="header">
+      <div class="bsd">בס"ד</div>
+      <div class="hosts" id="hosts"></div>
+      <h1 id="title"></h1>
+      <ul class="details" id="details"></ul>
+    </div>
+    <hr>
+
+    <form id="form" novalidate>
+      <label for="name">שם המשפחה / המוזמן</label>
+      <input type="text" id="name" name="name" required autocomplete="name" placeholder="לדוגמה: משפחת לוי">
+
+      <label for="phone">טלפון</label>
+      <input type="tel" id="phone" name="phone" required autocomplete="tel" inputmode="tel" placeholder="050-0000000">
+
+      <label>האם תגיעו?</label>
+      <div class="choice">
+        <input type="radio" id="att-yes" name="attending" value="yes" checked>
+        <label for="att-yes">נשמח להגיע</label>
+        <input type="radio" id="att-no" name="attending" value="no">
+        <label for="att-no">לא נוכל להגיע</label>
+      </div>
+
+      <div id="countsBlock">
+        <label>כמה משתתפים?</label>
+        <div class="counters">
+          <div class="counter">
+            <div class="lbl">גברים</div>
+            <div class="stepper">
+              <button type="button" data-target="men" data-d="1" aria-label="הוסף גבר">+</button>
+              <output id="men">0</output>
+              <button type="button" data-target="men" data-d="-1" aria-label="הפחת גבר">−</button>
+            </div>
+          </div>
+          <div class="counter">
+            <div class="lbl">נשים</div>
+            <div class="stepper">
+              <button type="button" data-target="women" data-d="1" aria-label="הוסף אישה">+</button>
+              <output id="women">0</output>
+              <button type="button" data-target="women" data-d="-1" aria-label="הפחת אישה">−</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <label for="note">הערה (לא חובה)</label>
+      <textarea id="note" name="note" rows="2"></textarea>
+
+      <button class="btn" type="submit" id="submit">שליחת אישור</button>
+      <div class="msg" id="msg"></div>
+    </form>
+
+    <div class="thanks hidden" id="thanks">
+      <h2>תודה רבה!</h2>
+      <p id="thanksText"></p>
+      <p class="muted">אפשר לעדכן בכל עת – פשוט ממלאים שוב עם אותו מספר טלפון.</p>
+      <button class="btn secondary" type="button" id="again">עדכון התשובה</button>
+    </div>
+  </div>
+</main>
+
+<script>
+(function () {
+  const C = window.EVENT_CONFIG;
+  const $ = (id) => document.getElementById(id);
+  document.title = "אישור הגעה – " + C.title;
+  $("title").textContent = C.title;
+  $("hosts").textContent = C.hosts ? C.hosts + " שמחים להזמינכם" : "";
+  const d = [];
+  if (C.date) d.push(["תאריך", C.date]);
+  if (C.time) d.push(["שעה", C.time]);
+  if (C.location) d.push(["מקום", C.location]);
+  if (C.rsvpDeadline) d.push(["נא לאשר עד", C.rsvpDeadline]);
+  d.forEach(([k, v]) => {
+    const li = document.createElement("li");
+    li.innerHTML = "<b></b> ";
+    li.firstChild.textContent = k + ":";
+    li.appendChild(document.createTextNode(v));
+    $("details").appendChild(li);
+  });
+  if (C.mapsLink) {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = C.mapsLink; a.target = "_blank"; a.rel = "noopener"; a.textContent = "ניווט למקום";
+    li.appendChild(a); $("details").appendChild(li);
+  }
+
+  // Prefill from personal invite link: ?name=...
+  const qs = new URLSearchParams(location.search);
+  if (qs.get("name")) $("name").value = qs.get("name");
+
+  const counts = { men: 0, women: 0 };
+  document.querySelectorAll(".stepper button").forEach((b) => {
+    b.addEventListener("click", () => {
+      const t = b.dataset.target;
+      counts[t] = Math.max(0, Math.min(50, counts[t] + Number(b.dataset.d)));
+      $(t).textContent = counts[t];
+    });
+  });
+
+  const syncAttending = () => {
+    const yes = document.querySelector("input[name=attending]:checked").value === "yes";
+    $("countsBlock").classList.toggle("hidden", !yes);
+  };
+  document.querySelectorAll("input[name=attending]").forEach((r) => r.addEventListener("change", syncAttending));
+
+  const showMsg = (text, type) => { const m = $("msg"); m.textContent = text; m.className = "msg " + type; };
+
+  $("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const attending = document.querySelector("input[name=attending]:checked").value;
+    const name = $("name").value.trim();
+    const phone = $("phone").value.replace(/[^\d+]/g, "");
+    if (!name) return showMsg("נא למלא שם", "err");
+    if (phone.length < 9) return showMsg("נא למלא מספר טלפון תקין", "err");
+    if (attending === "yes" && counts.men + counts.women === 0)
+      return showMsg("נא לציין כמה משתתפים יגיעו", "err");
+
+    const payload = {
+      name, phone, attending,
+      men: attending === "yes" ? counts.men : 0,
+      women: attending === "yes" ? counts.women : 0,
+      note: $("note").value.trim(),
+    };
+
+    if (!C.apiUrl || C.apiUrl.startsWith("PASTE_")) {
+      return showMsg("המערכת עדיין לא חוברה (חסר apiUrl בקובץ config.js)", "err");
+    }
+
+    $("submit").disabled = true; showMsg("שולח...", "ok");
+    try {
+      const res = await fetch(C.apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoids CORS preflight
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "error");
+      $("form").classList.add("hidden");
+      $("thanks").classList.remove("hidden");
+      $("thanksText").textContent = attending === "yes"
+        ? `רשמנו ${payload.men} גברים ו-${payload.women} נשים. נשמח לראותכם!`
+        : "תודה על העדכון. נשמח לשמוח יחד בשמחות.";
+    } catch (err) {
+      showMsg("אירעה שגיאה בשליחה, נא לנסות שוב", "err");
+    } finally {
+      $("submit").disabled = false;
+    }
+  });
+
+  $("again").addEventListener("click", () => {
+    $("thanks").classList.add("hidden");
+    $("form").classList.remove("hidden");
+    $("msg").className = "msg";
+  });
+})();
+</script>
+</body>
+</html>
